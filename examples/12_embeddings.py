@@ -35,6 +35,7 @@ Run it (needs VOYAGE_API_KEY in .env):
 import math
 import os
 import sys
+from collections.abc import Sequence
 
 # Make the repo-root modules (pricing.py) importable no matter where you run from.
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
@@ -52,10 +53,10 @@ if not os.getenv("VOYAGE_API_KEY"):
     )
 
 # The Voyage client reads VOYAGE_API_KEY from the environment automatically.
-vo = voyageai.Client()
+vo = voyageai.Client()  # pyright: ignore[reportPrivateImportUsage]
 
 
-def cosine_similarity(a: list[float], b: list[float]) -> float:
+def cosine_similarity(a: Sequence[float], b: Sequence[float]) -> float:
     dot = sum(x * y for x, y in zip(a, b))
     norm_a = math.sqrt(sum(x * x for x in a))
     norm_b = math.sqrt(sum(y * y for y in b))

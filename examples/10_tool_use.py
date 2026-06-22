@@ -34,8 +34,10 @@ Run it:
 
 import os
 import sys
+from typing import cast
 
 import anthropic
+from anthropic.types import MessageParam, ToolParam
 from dotenv import load_dotenv
 
 load_dotenv()
@@ -54,7 +56,7 @@ def get_current_weather(city: str) -> str:
 
 
 # --- Step 1: describe the tool to the model. ---
-tools = [
+tools: list[ToolParam] = [
     {
         "name": "get_current_weather",
         "description": "Get the current weather for a city.",
@@ -68,7 +70,9 @@ tools = [
     }
 ]
 
-messages = [{"role": "user", "content": "What's the weather like in Tokyo?"}]
+messages: list[MessageParam] = [
+    {"role": "user", "content": "What's the weather like in Tokyo?"}
+]
 
 # First call: the model decides it needs the tool.
 first = client.messages.create(
@@ -88,7 +92,9 @@ tool_results = []
 for block in first.content:
     if block.type == "tool_use":
         print(f"[model requested: {block.name}({block.input})]")
-        result = get_current_weather(**block.input)  # block.input is already a dict
+        # block.input is typed as `object` (it's parsed JSON); we know our schema.
+        tool_input = cast("dict[str, str]", block.input)
+        result = get_current_weather(**tool_input)
         # --- Step 4: return the result, tagged with the call's id. ---
         tool_results.append({
             "type": "tool_result",
