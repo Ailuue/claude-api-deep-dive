@@ -44,7 +44,14 @@ pip install -r requirements.txt
 cp .env.example .env
 #    ...then open .env and paste your key from
 #    https://console.anthropic.com/settings/keys
+
+# 4. Confirm everything is wired up correctly (makes no API call, costs nothing)
+python check_setup.py
 ```
+
+`check_setup.py` is your first stop if anything goes wrong: it checks your Python
+version, your installed packages, and your key, and tells you exactly what to fix.
+Green across the board means you're ready for Section 2.
 
 > 💡 **You'll need a key for everything here, but the token-counting parts are
 > free.** Unlike some APIs, Claude has no offline tokenizer — counting tokens is
@@ -417,9 +424,31 @@ started with.
 
 ---
 
+## Troubleshooting
+
+Hit a snag? Run `python check_setup.py` first — it catches most problems. The
+rest, by the error you see:
+
+| What you see | What it means / the fix |
+|--------------|-------------------------|
+| `ModuleNotFoundError: No module named 'anthropic'` | Dependencies aren't installed (or your venv isn't active). Run `source .venv/bin/activate` then `pip install -r requirements.txt`. |
+| `Set ANTHROPIC_API_KEY ...` on every script | No key found. `cp .env.example .env`, paste your real key, save. |
+| `AuthenticationError` / 401 | The key is present but wrong — expired, revoked, or a typo. Make a fresh one at the [console](https://console.anthropic.com/settings/keys). |
+| `RateLimitError` / 429 | Too many requests, or you're out of credit. Wait a moment, or check your billing/usage in the console. |
+| `NotFoundError` / 404 about the model | A model name was mistyped or retired. The examples use current IDs; if you changed one, check it against the [model list](https://platform.claude.com/docs/en/about-claude/models/overview). |
+| `SyntaxError` or odd type errors on startup | You're likely on Python 3.9 or older. This repo needs 3.10+ — `check_setup.py` will confirm your version. |
+| It "hangs" with no output | Some examples stream, others wait for the full reply before printing. Give it a few seconds; for streaming examples you'll see text appear word by word. |
+
+Still stuck? Every example is small and self-contained — open the file, read the
+docstring at the top, and run it directly. The error message almost always points
+at the line.
+
+---
+
 ## File map
 
 ```
+check_setup.py              ← run first: verifies Python, packages, and your key
 hands_on/
   ask.py                    ← capstone CLI: ask a question about a code file
   extract.py                ← capstone CLI: extract validated data from free text
