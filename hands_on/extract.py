@@ -13,23 +13,23 @@ It ties together three things from the examples:
     constrained to a schema and the reply comes back as a validated object.
   - Rich output (example 16): the result is shown as a Markdown summary and a
     real table, not a wall of JSON.
-  - Token/cost awareness (tokens.py, pricing.py): same --dry-run discipline as
-    ask.py — see the price before you spend. (On Claude, counting tokens is a
-    free API call, so even --dry-run needs your key.)
+  - Token/cost awareness (utils/tokens.py, utils/pricing.py): same --dry-run
+    discipline as ask.py — see the price before you spend. (On Claude, counting
+    tokens is a free API call, so even --dry-run needs your key.)
 
 Examples
 --------
   # Extract action items from the sample meeting notes
-  python extract.py snippets/meeting_notes.txt
+  python hands_on/extract.py snippets/meeting_notes.txt
 
   # See tokens + estimated cost without paying for generation
-  python extract.py snippets/meeting_notes.txt --dry-run
+  python hands_on/extract.py snippets/meeting_notes.txt --dry-run
 
   # Use a more capable model for messier text
-  python extract.py snippets/meeting_notes.txt --model claude-sonnet-4-6
+  python hands_on/extract.py snippets/meeting_notes.txt --model claude-sonnet-4-6
 
   # Get the raw validated JSON instead of the pretty tables
-  python extract.py snippets/meeting_notes.txt --json
+  python hands_on/extract.py snippets/meeting_notes.txt --json
 """
 
 import argparse
@@ -37,14 +37,18 @@ import os
 import sys
 from enum import Enum
 
+# Make the repo root importable so `utils.*` is resolvable when running from
+# any directory.
+sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+
 from dotenv import load_dotenv
 from pydantic import BaseModel, Field
 from rich.console import Console
 from rich.markdown import Markdown
 from rich.table import Table
 
-from pricing import estimate_cost, format_cost
-from tokens import count_message_tokens
+from utils.pricing import estimate_cost, format_cost
+from utils.tokens import count_message_tokens
 
 
 # --- The shape we want out of the text -----------------------------------------
