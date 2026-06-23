@@ -313,6 +313,24 @@ your request" errors are handled differently from "try again later" ones.
 python examples/14_error_handling.py
 ```
 
+### Pydantic validation — typed, validated responses
+Instead of a hand-written JSON Schema + `json.loads` into an untyped dict, define
+your shape as a **Pydantic model** and pass it as `output_format`. The SDK sends
+the schema, constrains Claude, and hands back a *validated instance* on
+`.parsed_output` — typed attributes, enforced constraints, editor autocomplete.
+```bash
+python examples/15_pydantic_validation.py
+```
+
+### Formatting output — Markdown, tables & code blocks
+Claude answers in Markdown; dumped raw to a terminal it's a mess of literal
+`**asterisks**`. The `rich` library renders Markdown, syntax-highlighted code, and
+real tables in the terminal — the difference between output you skim and output
+you squint at.
+```bash
+python examples/16_rich_output.py
+```
+
 ---
 
 ## Where to go next
@@ -335,13 +353,41 @@ started with.
 
 ---
 
+## 9. A second mini-project: `extract.py`
+
+Where `ask.py` returns *prose*, `extract.py` returns *data*. Point it at messy
+free-form text and it pulls out a clean, typed, **validated** structure — then
+shows it as a Markdown summary and a real table. It's where examples 15
+(Pydantic) and 16 (rich) earn their keep on a realistic task.
+
+```bash
+# See tokens + cost first — the counting call is free:
+python extract.py snippets/meeting_notes.txt --dry-run
+
+# Extract action items (owner, due date, inferred priority) into a table:
+python extract.py snippets/meeting_notes.txt
+
+# Want the raw validated JSON instead? (e.g. to pipe into another tool)
+python extract.py snippets/meeting_notes.txt --json
+```
+
+Read the source in [extract.py](extract.py): the `Extraction` / `ActionItem`
+Pydantic models *are* the schema Claude must follow, and `render()` is the rich
+table. **Suggested exercise:** point it at your own meeting notes or an email, or
+change the models to extract something else entirely (contacts, invoice line
+items) — the prompt barely changes.
+
+---
+
 ## File map
 
 ```
-ask.py                      ← the capstone CLI (start here after the examples)
+ask.py                      ← capstone CLI: ask a question about a code file
+extract.py                  ← capstone CLI: extract validated data from free text
 tokens.py                   ← token counting via the free count_tokens API
 pricing.py                  ← price table + cost estimation
 snippets/buggy.py           ← a sample file to ask questions about
+snippets/meeting_notes.txt  ← sample free-form text for extract.py
 examples/
   01_basic_chat.py          ← the minimal request + content blocks
   02_roles.py               ← the system prompt, user / assistant
@@ -357,4 +403,6 @@ examples/
   12_embeddings.py          ← vectors & semantic similarity (via Voyage AI)
   13_conversation.py        ← multi-turn chat & the stateless API
   14_error_handling.py      ← timeouts, retries & typed exceptions
+  15_pydantic_validation.py ← typed, validated responses via Pydantic
+  16_rich_output.py         ← Markdown, tables & code blocks in the terminal
 ```
