@@ -78,7 +78,7 @@ def count_message_tokens(
 
 
 if __name__ == "__main__":
-    # Run `python tokens.py` to see token counting in action.
+    # Run `python utils/tokens.py` to see token counting in action.
     # This makes a (free) API call, so it needs your key in .env.
     import os
     import sys
