@@ -405,9 +405,48 @@ immediately — no wasted tokens.
 
 ---
 
+## 11. The fourth capstone: `rag.py`
+
+The embeddings example (Section 8) ranked sentences by similarity. `rag.py` puts
+that to work: it answers questions over a small knowledge base by *retrieving*
+the most relevant facts and pasting them into the prompt — the smallest thing
+that is recognizably **retrieval-augmented generation (RAG)**. No vector
+database, no framework; just the embeddings and chat calls you already know,
+wired together from scratch.
+
+The one idea to hold onto: **a model can only answer from what's in its context
+window — RAG just decides what to put there.**
+
+```bash
+# Answer the built-in demo question from the knowledge base:
+python hands_on/rag.py
+
+# Ask your own:
+python hands_on/rag.py "Can I get a refund?"
+
+# The killer contrast — the same question with NO retrieved context:
+python hands_on/rag.py "How long are deleted notes kept?" --no-rag
+
+# See exactly what gets retrieved and what prompt gets sent:
+python hands_on/rag.py "What plans are there?" -k 5 --show-prompt
+```
+
+The knowledge base is about a *made-up* app, so Claude can't fall back on
+training — a correct answer can only come from retrieval. Run it with `--no-rag`
+and watch the model guess or refuse; that contrast *is* the lesson. It also shows
+the realistic shape of a Claude app: **Voyage embeds, Claude reasons**, so it
+uses both keys (`--no-rag` needs only your Anthropic key).
+
+Read the source in [hands_on/rag.py](hands_on/rag.py): `retrieve()` is the whole
+embed → score → rank loop, and `build_user_message()` is the entire "augment"
+step — RAG is mostly good string assembly. **Suggested exercise:** add a fact to
+`KNOWLEDGE_BASE`, then ask a question only that fact can answer.
+
+---
+
 ## Where to go next
 
-You've now covered the essentials, the most common extensions, and three capstone
+You've now covered the essentials, the most common extensions, and four capstone
 projects. Further on:
 
 - **Prompt caching** — cache a large, repeated prefix so you pay ~0.1× for it on
@@ -420,6 +459,10 @@ projects. Further on:
   non-latency-sensitive work.
 - **Agents & MCP** — multi-step tool-using loops, and connecting Claude to
   external tools through the Model Context Protocol.
+- **RAG at scale** — the `rag.py` capstone re-embeds a handful of facts on every
+  run. Real systems embed once into a **vector database**, **chunk** long
+  documents, and add **reranking** and **evaluation** — enough moving parts to be
+  a deep dive of its own.
 
 Each of these slots neatly on top of the "send messages, get a message" idea you
 started with.
@@ -456,6 +499,7 @@ hands_on/
   ask.py                    ← capstone CLI: ask a question about a code file
   extract.py                ← capstone CLI: extract validated data from free text
   streaming_server.py       ← capstone server: stream AI responses over SSE
+  rag.py                    ← capstone CLI: answer questions over a knowledge base (RAG)
   static/index.html         ← browser UI for the streaming server
 utils/
   tokens.py                 ← token counting via the free count_tokens API
