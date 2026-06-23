@@ -180,7 +180,7 @@ trade-off is it needs your key and a network call — and you get back a *count*
 not the individual token pieces (Anthropic's tokenizer isn't public).
 
 ```bash
-python tokens.py          # count a sentence's tokens (free API call)
+python utils/tokens.py          # count a sentence's tokens (free API call)
 ```
 
 Why counting matters:
@@ -190,7 +190,7 @@ Why counting matters:
 3. **Intuition** — watching the count change as you edit a prompt teaches you how
    the model "sees" your text.
 
-See [tokens.py](tokens.py) for `count_tokens()` (a raw string) and
+See [utils/tokens.py](utils/tokens.py) for `count_tokens()` (a raw string) and
 `count_message_tokens()` (a full request — including the system prompt, which
 counts toward your input tokens too).
 
@@ -199,7 +199,7 @@ counts toward your input tokens too).
 ## 6. Cost estimation
 
 Anthropic charges **separately for input and output tokens**, and output is
-several times more expensive. [pricing.py](pricing.py) holds a small price table
+several times more expensive. [utils/pricing.py](utils/pricing.py) holds a small price table
 and an `estimate_cost()` helper. (Counting is an API call; the cost *math* is
 pure local computation — no network, no key.)
 
@@ -210,7 +210,7 @@ python examples/07_token_counting.py   # tokens -> dollars, across models
 Sample output shows the same request costing wildly different amounts per model —
 which is why **choosing the right model is part of prompt engineering.**
 
-> ⚠️ Prices change. The table in `pricing.py` is a snapshot — always confirm at
+> ⚠️ Prices change. The table in `utils/pricing.py` is a snapshot — always confirm at
 > <https://platform.claude.com/docs/en/about-claude/pricing>.
 
 ---
@@ -223,23 +223,23 @@ see the *actual* usage and cost after.
 
 ```bash
 # See the size and cost first — the counting call is free, so no money spent:
-python ask.py snippets/buggy.py "Is there a bug here?" --dry-run
+python hands_on/ask.py snippets/buggy.py "Is there a bug here?" --dry-run
 
 # For real:
-python ask.py snippets/buggy.py "Is there a bug here?"
+python hands_on/ask.py snippets/buggy.py "Is there a bug here?"
 
 # Now turn the knobs you just learned:
-python ask.py snippets/buggy.py "Rewrite this cleanly" --temperature 0
-python ask.py snippets/buggy.py "List the issues" --max-tokens 200 --stop "4."
-python ask.py snippets/buggy.py "Explain this" --model claude-sonnet-4-6
+python hands_on/ask.py snippets/buggy.py "Rewrite this cleanly" --temperature 0
+python hands_on/ask.py snippets/buggy.py "List the issues" --max-tokens 200 --stop "4."
+python hands_on/ask.py snippets/buggy.py "Explain this" --model claude-sonnet-4-6
 ```
 
-Run `python ask.py --help` to see every knob explained inline. Read the source in
-[ask.py](ask.py) — it's commented as a tutorial, especially `build_messages()`
+Run `python hands_on/ask.py --help` to see every knob explained inline. Read the source in
+[hands_on/ask.py](hands_on/ask.py) — it's commented as a tutorial, especially `build_messages()`
 (how the request is assembled, with the system prompt kept separate) and the
 usage/cost reporting at the end.
 
-**Suggested exercise:** point `ask.py` at your *own* code, try the same question
+**Suggested exercise:** point `hands_on/ask.py` at your *own* code, try the same question
 at `--temperature 0` vs `--temperature 1`, and watch both the answers and the
 cost change.
 
@@ -362,16 +362,16 @@ shows it as a Markdown summary and a real table. It's where examples 15
 
 ```bash
 # See tokens + cost first — the counting call is free:
-python extract.py snippets/meeting_notes.txt --dry-run
+python hands_on/extract.py snippets/meeting_notes.txt --dry-run
 
 # Extract action items (owner, due date, inferred priority) into a table:
-python extract.py snippets/meeting_notes.txt
+python hands_on/extract.py snippets/meeting_notes.txt
 
 # Want the raw validated JSON instead? (e.g. to pipe into another tool)
-python extract.py snippets/meeting_notes.txt --json
+python hands_on/extract.py snippets/meeting_notes.txt --json
 ```
 
-Read the source in [extract.py](extract.py): the `Extraction` / `ActionItem`
+Read the source in [hands_on/extract.py](hands_on/extract.py): the `Extraction` / `ActionItem`
 Pydantic models *are* the schema Claude must follow, and `render()` is the rich
 table. **Suggested exercise:** point it at your own meeting notes or an email, or
 change the models to extract something else entirely (contacts, invoice line
@@ -382,10 +382,12 @@ items) — the prompt barely changes.
 ## File map
 
 ```
-ask.py                      ← capstone CLI: ask a question about a code file
-extract.py                  ← capstone CLI: extract validated data from free text
-tokens.py                   ← token counting via the free count_tokens API
-pricing.py                  ← price table + cost estimation
+hands_on/
+  ask.py                    ← capstone CLI: ask a question about a code file
+  extract.py                ← capstone CLI: extract validated data from free text
+utils/
+  tokens.py                 ← token counting via the free count_tokens API
+  pricing.py                ← price table + cost estimation
 snippets/buggy.py           ← a sample file to ask questions about
 snippets/meeting_notes.txt  ← sample free-form text for extract.py
 examples/
