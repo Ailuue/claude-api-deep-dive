@@ -331,6 +331,16 @@ you squint at.
 python examples/16_rich_output.py
 ```
 
+### Server-Sent Events (SSE) — the protocol under streaming
+Every streaming Claude response travels over SSE: a plain HTTP response that
+stays open and drips `event: <type>` / `data: <json>` pairs until the server is
+done. Claude's event stream is richer than most — it includes `message_start`,
+`content_block_delta`, `message_delta`, and more. This example shows all of them
+at the raw level, plus per-token timing and partial response accumulation.
+```bash
+python examples/17_sse.py
+```
+
 ---
 
 ## Where to go next
@@ -350,6 +360,33 @@ You've now covered the essentials and the most common extensions. Further on:
 
 Each of these slots neatly on top of the "send messages, get a message" idea you
 started with.
+
+---
+
+## 10. Capstone: `streaming_server.py`
+
+Where `ask.py` and `extract.py` are CLI tools, `streaming_server.py` is a web
+service. It's a FastAPI backend that streams Claude responses to a browser over
+SSE, showing three production concerns: token-by-token forwarding, client
+disconnect detection, and error recovery with retries.
+
+```bash
+# Start the server (auto-reloads on file saves):
+uvicorn hands_on.streaming_server:app --reload
+
+# Then open: http://localhost:8000
+```
+
+Open the browser's **Network tab** and click the `/stream` request to see the raw
+`text/event-stream` response. Close the tab mid-stream to watch the server log
+"client disconnected" and stop the Claude call. Read the source in
+[hands_on/streaming_server.py](hands_on/streaming_server.py) — the three-phase
+generator (`_stream_tokens`) is the core pattern every production streaming
+endpoint follows.
+
+**Suggested exercise:** ask something that generates a long response and close the
+browser tab mid-stream. Notice in the server logs that generation stops
+immediately — no wasted tokens.
 
 ---
 
@@ -385,6 +422,8 @@ items) — the prompt barely changes.
 hands_on/
   ask.py                    ← capstone CLI: ask a question about a code file
   extract.py                ← capstone CLI: extract validated data from free text
+  streaming_server.py       ← capstone server: stream AI responses over SSE
+  static/index.html         ← browser UI for the streaming server
 utils/
   tokens.py                 ← token counting via the free count_tokens API
   pricing.py                ← price table + cost estimation
@@ -407,4 +446,5 @@ examples/
   14_error_handling.py      ← timeouts, retries & typed exceptions
   15_pydantic_validation.py ← typed, validated responses via Pydantic
   16_rich_output.py         ← Markdown, tables & code blocks in the terminal
+  17_sse.py                 ← SSE protocol: raw events, timing, partial accumulation
 ```
