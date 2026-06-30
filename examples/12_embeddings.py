@@ -40,7 +40,7 @@ from collections.abc import Sequence
 # Make the repo-root modules (utils/pricing.py) importable no matter where you run from.
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-import voyageai
+import voyageai  # type: ignore[import-untyped]
 from dotenv import load_dotenv
 
 from utils.pricing import estimate_embedding_cost, format_cost
