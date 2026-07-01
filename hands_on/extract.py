@@ -181,7 +181,8 @@ def main(argv: list[str]) -> int:
     # 3. Count input tokens and estimate cost BEFORE generating anything.
     messages = build_messages(text)
     input_tokens = count_message_tokens(
-        client, messages, model=args.model, system=SYSTEM_PROMPT
+        client, messages, model=args.model, system=SYSTEM_PROMPT,
+        output_format=Extraction,
     )
 
     print(f"Model:         {args.model}")
