@@ -436,8 +436,8 @@ generator (`_stream_tokens`) is the core pattern every production streaming
 endpoint follows.
 
 **Suggested exercise:** ask something that generates a long response and close the
-browser tab mid-stream. Notice in the server logs that generation stops
-immediately — no wasted tokens.
+browser tab mid-stream. The server logs `client disconnected after N chunks —
+aborting Claude call` and the Claude API call stops immediately — no wasted tokens.
 
 ---
 
@@ -593,6 +593,35 @@ examples/
   20_prompt_caching.py      ← cache_control: cache a long repeated prefix at ~0.1x
   21_async_concurrency.py   ← AsyncAnthropic + asyncio.gather + a Semaphore (throughput)
 ```
+
+---
+
+### Footnote — quieting Pylance/type-checker noise
+
+Two patterns trip the type checker repeatedly with the Anthropic SDK. Pre-empt
+them and new files stay clean:
+
+1. **Assigning `messages` / `tools` to a variable** (rather than passing the
+   literal straight into `create()`) makes Pylance infer a too-narrow type like
+   `list[dict[str, str]]`. Annotate with the SDK's own param types — you also get
+   key autocomplete:
+   ```python
+   from anthropic.types import MessageParam, ToolParam
+   messages: list[MessageParam] = [...]
+   tools: list[ToolParam] = [...]
+   ```
+2. **`response.content` is a `list` of content blocks, not a string.** There's no
+   single `.content` string to read like a chat-completion's `.content` — even a
+   plain text reply comes back as `[TextBlock(type="text", text="...")]`. Walk
+   the list and pull out the `"text"`-typed blocks:
+   ```python
+   reply = "".join(block.text for block in response.content if block.type == "text")
+   ```
+
+The repo's [.vscode/settings.json](.vscode/settings.json) also sets
+`python.analysis.typeCheckingMode` to `basic`, which keeps the useful checks
+(undefined names, bad attrs/args) while dropping the strict dict-vs-TypedDict
+complaints.
 
 ---
 
