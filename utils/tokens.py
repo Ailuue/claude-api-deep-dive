@@ -61,12 +61,16 @@ def count_message_tokens(
     messages: list[dict],
     model: str = DEFAULT_MODEL,
     system: str | None = None,
+    output_format: type | None = None,
 ) -> int:
     """Count input tokens for a full message list.
 
     Unlike a bare string, a real request also carries a system prompt and
-    (sometimes) tool definitions — and **all of it counts** toward your input
-    tokens. Pass `system` here so the number matches what you'll be billed for.
+    (sometimes) tool definitions or a structured `output_format` — and **all of
+    it counts** toward your input tokens. Pass `system`/`output_format` here so
+    the number matches what you'll be billed for: a Pydantic `output_format` is
+    turned into a JSON-schema tool definition under the hood, which can easily
+    outweigh the rest of the prompt.
 
     The API adds the same small per-message bookkeeping the model uses, so this
     is the authoritative input-token count, not an estimate.
@@ -74,6 +78,8 @@ def count_message_tokens(
     kwargs: dict = {"model": model, "messages": messages}
     if system is not None:
         kwargs["system"] = system
+    if output_format is not None:
+        kwargs["output_format"] = output_format
     return client.messages.count_tokens(**kwargs).input_tokens
 
 
